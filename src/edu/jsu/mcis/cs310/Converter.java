@@ -7,6 +7,7 @@ import java.util.List;
 
 public class Converter {
 
+ @SuppressWarnings("unchecked")
 public static String csvToJson(String csvString) {
     String result = "{}";
     try {
@@ -36,7 +37,7 @@ public static String csvToJson(String csvString) {
     }
     jsonObject.put("ColHeadings", colHeadings);
     jsonObject.put("Data", data);
-    jsonObject.put("Product Numbers", productNumbers);
+    jsonObject.put("ProdNums", productNumbers);
     result = jsonObject.toString();
 } catch (Exception e) {
     e.printStackTrace();
@@ -56,7 +57,7 @@ JsonArray colHeadings = (JsonArray) jsonObject.get("ColHeadings");
  System.out.println("colHeadings: " + colHeadings); 
 JsonArray data = (JsonArray) jsonObject.get("Data");
  System.out.println("data: " + data);  // Debug statement
-JsonArray productNumbers = (JsonArray) jsonObject.get("Product Numbers");
+JsonArray productNumbers = (JsonArray) jsonObject.get("ProdNums");
 System.out.println("productNumbers: " + productNumbers);  // Debug statement
 StringBuilder csvString = new StringBuilder();
 for (Object colHeading : colHeadings) {
