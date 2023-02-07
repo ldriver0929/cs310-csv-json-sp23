@@ -10,42 +10,40 @@ public class Converter {
  @SuppressWarnings("unchecked")
 public static String csvToJson(String csvString) {
     String result = "{}";
-    try {
+    try { 
         List<String[]> csvRows = new ArrayList<>();
         CSVReader csvReader = new CSVReader(new StringReader(csvString));
         csvRows = csvReader.readAll();
 
-     JsonObject jsonObject = new JsonObject();
-    JsonArray colHeadings = new JsonArray();
-    JsonArray data = new JsonArray();
-    JsonArray productNumbers = new JsonArray();
-    int i = 0;
-    for (String[] row : csvRows) {
-        if (i == 0) {
-            for (String colHeading : row) {
-                colHeadings.add(colHeading);
+        JsonObject jsonObject = new JsonObject();
+        JsonArray colHeadings = new JsonArray();
+        JsonArray data = new JsonArray();
+        JsonArray productNumbers = new JsonArray();
+        int i = 0;
+        for (String[] row : csvRows) {
+            if (i == 0) {
+                for (String colHeading : row) {
+                    colHeadings.add(colHeading);
+                }
+            } else {
+                JsonArray dataRow = new JsonArray();
+                for (int j = 1; j < row.length; j++) {
+                    dataRow.add(row[j]);
+                }
+                data.add(dataRow);
+                productNumbers.add(row[0]);
             }
-        } else {
-            JsonArray dataRow = new JsonArray();
-            for (int j = 1; j < row.length; j++) {
-                dataRow.add(row[j]);
-            }
-            data.add(dataRow);
-            productNumbers.add(row[0]);
+            i++;
         }
-        i++;
+        jsonObject.put("ColHeadings", colHeadings);
+        jsonObject.put("Data", data);
+        jsonObject.put("ProdNums", productNumbers);
+        result = jsonObject.toString();
+   } catch (Exception e) {
+        e.printStackTrace();
     }
-    jsonObject.put("ColHeadings", colHeadings);
-    jsonObject.put("Data", data);
-    jsonObject.put("ProdNums", productNumbers);
-    result = jsonObject.toString();
-} catch (Exception e) {
-    e.printStackTrace();
+    return result.trim();
 }
-return result.trim();
-}
-
-
 
 
  @SuppressWarnings("unchecked")
@@ -54,11 +52,9 @@ String result = ""; // default return value; replace later!
 try {
 JsonObject jsonObject = (JsonObject) Jsoner.deserialize(jsonString);
 JsonArray colHeadings = (JsonArray) jsonObject.get("ColHeadings");
- System.out.println("colHeadings: " + colHeadings); 
 JsonArray data = (JsonArray) jsonObject.get("Data");
- System.out.println("data: " + data);  // Debug statement
 JsonArray productNumbers = (JsonArray) jsonObject.get("ProdNums");
-System.out.println("productNumbers: " + productNumbers);  // Debug statement
+//System.out.println("productNumbers: " + productNumbers);  // Debug statement
 StringBuilder csvString = new StringBuilder();
 for (Object colHeading : colHeadings) {
 csvString.append(colHeading).append(",");
