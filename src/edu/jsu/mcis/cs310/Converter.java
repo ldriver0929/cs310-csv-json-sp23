@@ -1,83 +1,110 @@
 package edu.jsu.mcis.cs310;
+
 import com.github.cliftonlabs.json_simple.*;
 import com.opencsv.*;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Converter {
 
- @SuppressWarnings("unchecked")
-public static String csvToJson(String csvString) {
-    String result = "{}";
-    try { 
-        List<String[]> csvRows = new ArrayList<>();
-        CSVReader csvReader = new CSVReader(new StringReader(csvString));
-        csvRows = csvReader.readAll();
+    @SuppressWarnings("unchecked")
+    public static String csvToJson(String csvString) {
+        String result = "{}";
+        try {
+            List<String[]> csvRows = new ArrayList<>();
+            CSVReader csvReader = new CSVReader(new StringReader(csvString));
+            csvRows = csvReader.readAll();
 
-        JsonObject jsonObject = new JsonObject();
-        JsonArray colHeadings = new JsonArray();
-        JsonArray data = new JsonArray();
-        JsonArray productNumbers = new JsonArray();
-        int i = 0;
-        for (String[] row : csvRows) {
-            if (i == 0) {
-                for (String colHeading : row) {
-                    colHeadings.add(colHeading);
-                }
-            } else {
-                JsonArray dataRow = new JsonArray();
-                for (int j = 1; j < row.length; j++) {
-                    dataRow.add(row[j]);
+            JsonObject jsonObject = new JsonObject();
+            JsonArray colHeadings = new JsonArray();
+            JsonArray data = new JsonArray();
+            JsonArray productNumbers = new JsonArray();
+            int i = 0;
+            for (String[] row : csvRows) {
+                if (i == 0) {
+                    for (String colHeading : row) {
+                        colHeadings.add(colHeading);
+                    }
+                } else {
+                    JsonArray dataRow = new JsonArray();
+                    for (int j = 1; j < row.length; j++) {
+                    if(j == 2 || j == 3) {
+                        dataRow.add(Integer.parseInt(row[j].trim()));
+                    } else {
+                        dataRow.add(row[j].trim());
+                    }
                 }
                 data.add(dataRow);
                 productNumbers.add(row[0]);
             }
             i++;
+            }
+            jsonObject.put("ColHeadings", colHeadings);
+            jsonObject.put("Data", data);
+            jsonObject.put("ProdNums", productNumbers);
+            result = Jsoner.serialize(jsonObject);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        jsonObject.put("ColHeadings", colHeadings);
-        jsonObject.put("Data", data);
-        jsonObject.put("ProdNums", productNumbers);
-        result = jsonObject.toString();
-   } catch (Exception e) {
+        return result.trim();
+    }
+
+    @SuppressWarnings("unchecked")
+public static String jsonToCsv(String jsonString) {
+    String result = "";
+    try {
+            StringWriter writer = new StringWriter();
+            CSVWriter csvWriter = new CSVWriter(writer, ',', '"', '\\', "\n");
+            
+            JsonObject jsonObject = (JsonObject) Jsoner.deserialize(jsonString);
+            JsonArray colHeadings = (JsonArray) jsonObject.get("ColHeadings");
+            JsonArray data = (JsonArray) jsonObject.get("Data");
+            JsonArray productNumbers = (JsonArray) jsonObject.get("ProdNums");
+            
+            String[] header = new String[colHeadings.size()];
+            for (int i = 0; i < header.length; i++) {
+                header[i] = (String) colHeadings.get(i);
+            }
+            
+
+            
+            csvWriter.writeNext(header);
+            
+            for (int i = 0; i < data.size(); i++) {
+                JsonArray row = (JsonArray) data.get(i);
+                String[] rowData = new String[row.size() + 1];
+                if (i==79)
+                {System.out.println(data.get(i));}
+                rowData[0] = productNumbers.get(i).toString();
+                
+                for (int j = 0; j < row.size(); j++) {
+                 
+
+                    rowData[j + 1] = row.get(j).toString();
+                     if (j==2)
+                         
+                        {
+                        
+String paddedzeros = String.format("%02d", Integer.parseInt(row.get(j).toString()));
+rowData[j + 1] = paddedzeros;
+
+                         
+                          }
+                     
+                }
+                
+                csvWriter.writeNext(rowData);
+            }
+            
+          
+            csvWriter.close();
+            result = writer.toString().trim();
+    } catch (Exception e) {
         e.printStackTrace();
     }
-    return result.trim();
+    return result;
 }
 
-
- @SuppressWarnings("unchecked")
-public static String jsonToCsv(String jsonString) {
-String result = ""; // default return value; replace later!
-try {
-JsonObject jsonObject = (JsonObject) Jsoner.deserialize(jsonString);
-JsonArray colHeadings = (JsonArray) jsonObject.get("ColHeadings");
-JsonArray data = (JsonArray) jsonObject.get("Data");
-JsonArray productNumbers = (JsonArray) jsonObject.get("ProdNums");
-//System.out.println("productNumbers: " + productNumbers);  // Debug statement
-StringBuilder csvString = new StringBuilder();
-for (Object colHeading : colHeadings) {
-csvString.append(colHeading).append(",");
 }
-csvString.setLength(csvString.length() - 1);
-csvString.append("\n");
-for (int i = 0; i < data.size(); i++) {
-JsonArray dataRow = (JsonArray) data.get(i);
-csvString.append(productNumbers.get(i)).append(",");
-for (int j = 0; j < dataRow.size(); j++) {
-csvString.append(dataRow.get(j)).append(",");
-}
-csvString.setLength(csvString.length() - 1);
-csvString.append("\n");
-}
-result = csvString.toString();
-} catch (Exception e) {
-e.printStackTrace();
-}
-return result;
-}
-}
-
-
-
-    
